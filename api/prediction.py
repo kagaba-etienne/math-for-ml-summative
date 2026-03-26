@@ -2,8 +2,21 @@ from fastapi import FastAPI
 from linear_regression.predict import proactive_scaling_engine, RawData
 from linear_regression.train import TrainingData, train_model
 import pandas as pd
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+origins = [
+    "https://math-for-ml-summative.onrender.com/"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():

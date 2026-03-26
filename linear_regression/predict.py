@@ -4,59 +4,79 @@ import pandas as pd
 import json
 import warnings
 warnings.filterwarnings("ignore")
+from typing import Annotated, Literal
+from pydantic import BaseModel, Field
 
-def proactive_scaling_engine(raw_data):
+# Load the trained model and scaler
+with open('./linear_regression/scaling_model/model.pkl', 'rb') as f_m:
+    model = pickle.load(f_m)
+with open('./linear_regression/scaling_model/scaler.pkl', 'rb') as f_s:
+    scaler = pickle.load(f_s)
+
+class RawData(BaseModel):
+    Task_Start_Time: str
+    Number_of_Active_Users: int
+    Network_Bandwidth_Utilization: float
+    Memory_Consumption: float
+    Task_Execution_Time: float
+    System_Throughput: float
+    Task_Waiting_Time: float
+    Error_Rate: Annotated[float, Field(ge=0, le=100)]
+    Job_Priority: Literal['Low', 'Medium', 'High']
+    Scheduler_Type: Literal['Round Robin', 'Priority-Based', 'FCFS', 'ASB-Dynamic-CapsNet']
+    Resource_Allocation_Type: Literal['Dynamic', 'Static']
+
+def proactive_scaling_engine(raw_data: RawData):
     """
-    INPUT: Dictionary of raw server metrics.
-    Example: {
-        'Task_Start_Time': '2023-10-27 08:30:00',
-        'Number_of_Active_Users': 450,
-        'Network_Bandwidth_Utilization (Mbps)': 200,
-        'Memory_Consumption (MB)': 4096,
-        'Task_Waiting_Time (ms)': 50,
-        'Error_Rate (%)': 0.01,
-        'Job_Priority': 'High',
-        'Scheduler_Type': 'Round Robin',
-        'Resource_Allocation_Type': 'Dynamic'
-    }
+    Predict CPU utilization and scaling action from raw server metrics.
+
+    Args:
+        raw_data (RawData): Pydantic model containing server metrics with strict typing.
+
+    Example:
+        RawData(
+            Task_Start_Time='2023-10-27 08:30:00',
+            Number_of_Active_Users=450,
+            Network_Bandwidth_Utilization=200.0,
+            Memory_Consumption=4096.0,
+            Task_Execution_Time=500.0,
+            System_Throughput=20.0,
+            Task_Waiting_Time=50.0,
+            Error_Rate=0.01,
+            Job_Priority='High',
+            Scheduler_Type='Round Robin',
+            Resource_Allocation_Type='Dynamic'
+        )
+    Returns:
+        dict: Predicted CPU utilization and recommended scaling action.
     """
-    # Load the trained model and scaler
-    with open('scaling_model/model.pkl', 'rb') as f_m:
-        model = pickle.load(f_m)
-    with open('scaling_model/scaler.pkl', 'rb') as f_s:
-        scaler = pickle.load(f_s)
 
     # Transform raw input data into the feature vector expected by the model
 
     # A. Time Transformation (Cyclical)
-    dt = pd.to_datetime(raw_data['Task_Start_Time'])
+    dt = pd.to_datetime(raw_data.Task_Start_Time)
     hour = dt.hour
     hour_sin = np.sin(2 * np.pi * hour / 24)
     hour_cos = np.cos(2 * np.pi * hour / 24)
 
-    # B. Priority Mapping (Ordinal)
-    dt = pd.to_datetime(raw_data['Task_Start_Time'])
-    hour_sin = np.sin(2 * np.pi * dt.hour / 24)
-    hour_cos = np.cos(2 * np.pi * dt.hour / 24)
-
-    # Priority -> Numbers
+    # Priority Mapping (Ordinal)
     p_map = {'Low': 0, 'Medium': 1, 'High': 2}
-    priority_val = p_map.get(raw_data['Job_Priority'], 0)
+    priority_val = p_map.get(raw_data.Job_Priority, 0)
 
     # One-Hot Encoding Logic
-    sched = raw_data['Scheduler_Type']
-    alloc = raw_data['Resource_Allocation_Type']
+    sched = raw_data.Scheduler_Type
+    alloc = raw_data.Resource_Allocation_Type
 
     # Assemble the feature vector in the same order as training
-    features = [
-        raw_data['Memory_Consumption (MB)'],
-        raw_data['Task_Execution_Time (ms)'],
-        raw_data['System_Throughput (tasks/sec)'],
-        raw_data['Task_Waiting_Time (ms)'],
-        raw_data['Number_of_Active_Users'],
-        raw_data['Network_Bandwidth_Utilization (Mbps)'],
+    features: list[float] = [
+        raw_data.Memory_Consumption,
+        raw_data.Task_Execution_Time,
+        raw_data.System_Throughput,
+        raw_data.Task_Waiting_Time,
+        raw_data.Number_of_Active_Users,
+        raw_data.Network_Bandwidth_Utilization,
         priority_val,
-        raw_data['Error_Rate (%)'],
+        raw_data.Error_Rate,
         hour,
         hour_sin,
         hour_cos,
@@ -86,17 +106,18 @@ def proactive_scaling_engine(raw_data):
     }
 
 #--- TEST ---
-raw_log = {
-    'Task_Start_Time': '2026-03-18 09:00:00',
-    'Memory_Consumption (MB)': 8192,
-    'Task_Execution_Time (ms)': 1200,
-    'System_Throughput (tasks/sec)': 45,
-    'Task_Waiting_Time (ms)': 150,
-    'Number_of_Active_Users': 800,
-    'Network_Bandwidth_Utilization (Mbps)': 500,
-    'Job_Priority': 'High',
-    'Error_Rate (%)': 0.02,
-    'Scheduler_Type': 'FCFS',
-    'Resource_Allocation_Type': 'Dynamic'
-}
-print(json.dumps(proactive_scaling_engine(raw_log), indent=2))
+if __name__ == "__main__":
+    raw_log = RawData(
+        Task_Start_Time='2026-03-18 09:00:00',
+        Memory_Consumption=8192,
+        Task_Execution_Time=1200,
+        System_Throughput=45,
+        Task_Waiting_Time=150,
+        Number_of_Active_Users=800,
+        Network_Bandwidth_Utilization=500,
+        Job_Priority='High',
+        Error_Rate=0.02,
+        Scheduler_Type='FCFS',
+        Resource_Allocation_Type='Dynamic'
+    )
+    print(json.dumps(proactive_scaling_engine(raw_log), indent=2))

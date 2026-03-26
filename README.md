@@ -15,8 +15,8 @@
 Below are screenshots of the app pages:
 
 <div style="display: flex; gap: 16px; ">
-  <img src="../Screenshot from 2026-03-26 20-03-30.png" width="300" alt="Home Page" />
-  <img src="../Screenshot from 2026-03-26 20-03-35.png" width="300" alt="Home Page" />
+  <img src="./Screenshot from 2026-03-26 20-03-30.png" width="300" alt="Home Page" />
+  <img src="./Screenshot from 2026-03-26 20-03-35.png" width="300" alt="Home Page" />
 </div>
 
 

@@ -1,17 +1,31 @@
-# flutter_app
+# App Screenshots
 
-A new Flutter project.
+Below are screenshots of the app pages:
 
-## Getting Started
+<div style="display: flex; gap: 16px; ">
+  <img src="../Screenshot from 2026-03-26 20-03-30.png" width="300" alt="Home Page" />
+  <img src="../Screenshot from 2026-03-26 20-03-35.png" width="300" alt="Home Page" />
+</div>
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+# How to Run the App
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+1. **Install Flutter:**
+  - Follow the official guide: https://docs.flutter.dev/get-started/install
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+2. **Clone this repository:**
+  - `git clone git@github.com:kagaba-etienne/math-for-ml-summative.git` or `git clone https://github.com/kagaba-etienne/math-for-ml-summative.git`
+  - `cd flutter_app`
+
+3. **Get dependencies:**
+  - Run: `flutter pub get`
+
+4. **Run the app:**
+  - Connect a device or start an emulator.
+  - Run: `flutter run`
+
+5. **Build for release (optional):**
+  - Android: `flutter build apk`
+  - iOS: `flutter build ios`
+
+For more details, see the [Flutter documentation](https://docs.flutter.dev/).

@@ -1,0 +1,11 @@
+{
+	"[dart]": {
+		"editor.defaultFormatter": "Dart-Code.dart-code"
+	},
+	"[flutter]": {
+		"editor.defaultFormatter": "Dart-Code.flutter"
+	},
+	"editor.formatOnSave": true,
+	"editor.formatOnType": true,
+	"dart.lineLength": 100,
+}
